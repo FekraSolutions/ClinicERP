@@ -1,0 +1,17 @@
+-- CreateTable
+CREATE TABLE "Payroll" (
+    "id" SERIAL NOT NULL,
+    "employeeName" TEXT NOT NULL,
+    "basicSalary" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "additions" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "deductions" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "netSalary" DOUBLE PRECISION NOT NULL,
+    "period" TIMESTAMP(3) NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Payroll_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Payroll" ADD CONSTRAINT "Payroll_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

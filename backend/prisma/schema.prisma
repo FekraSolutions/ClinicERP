@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  username      String        @unique
+  password      String
+  createdAt     DateTime      @default(now())
+
+  databaseRows  DatabaseRow[]
+  invoices      Invoice[]
+  expenses      Expense[]
+  payrollRecords Payroll[]
+  notes         PatientNote[]
+  sessions  Session[]
+}
+
+model DatabaseRow {
+  id                Int      @id @default(autoincrement())
+  employeeName      String?
+  doctorName        String?
+  serviceName       String?
+  servicePrice      Float?
+  inventoryItemName String?
+  purchasePrice     Float?
+  salePrice         Float?
+
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Invoice {
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  user                User     @relation(fields: [userId], references: [id])
+  date                DateTime @default(now())
+  time                String
+  patientName         String?
+  age                 Int?
+  patientId           String?
+  phone               String?
+  address             String?
+  email               String?
+  service             String?
+  doctor              String?
+  price               Float?
+  payMethod           String?
+  paid                Float?
+  discountAmount      Float?   // manual number entry
+  sessions            Int?     // manual number entry
+  priceAfterDiscount  Float?   // read-only, auto calculated
+  remaining           Float?   // read-only, auto calculated
+  companyName         String?
+  companyAddress      String?
+  registrationNumber  String?
+  taxNumber           String?
+  createdAt           DateTime @default(now())
+}
+
+model Expense {
+  id            Int      @id @default(autoincrement())
+  transactionId Int?     // Temporarily optional to handle existing data
+  date          DateTime @default(now())
+  description   String
+  amount        Float
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model Payroll {
+  id           Int      @id @default(autoincrement())
+  employeeName String
+  basicSalary  Float    @default(0)
+  additions    Float    @default(0)
+  deductions   Float    @default(0)
+  netSalary    Float    // We will calculate this before saving
+  period       DateTime // To filter by month/year
+  
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model PatientNote {
+  id          Int      @id @default(autoincrement())
+  patientName String
+  patientId   String?
+  content     String   @db.Text 
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  updatedAt   DateTime @updatedAt
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  date         String   
+  time         String   
+  patientName  String
+  patientPhone String
+  patientEmail String?
+  doctorName   String   
+  userId       Int      
+  user         User     @relation(fields: [userId], references: [id]) // ADD THIS LINE
+  createdAt    DateTime @default(now())
+}
