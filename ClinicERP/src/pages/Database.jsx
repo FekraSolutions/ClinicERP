@@ -12,7 +12,7 @@ function Database() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/database/${user.id}`)
+        const response = await fetch(`https://clinic-erp-beta.vercel.app/database/${user.id}`)
         const data = await response.json()
 
         if (data.length === 0) {
@@ -70,7 +70,7 @@ function Database() {
   // 🔹 Save changes to backend
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/database/${user.id}`, {
+      const response = await fetch(`https://clinic-erp-beta.vercel.app/database/${user.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

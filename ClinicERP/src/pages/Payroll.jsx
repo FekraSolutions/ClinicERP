@@ -23,11 +23,11 @@ function Payroll() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const empRes = await fetch(`http://localhost:5000/database/${user.id}`);
+        const empRes = await fetch(`https://clinic-erp-beta.vercel.app/database/${user.id}`);
         const empData = await empRes.json();
         setEmployees(empData.filter(row => row.employeeName));
 
-        const historyRes = await fetch(`http://localhost:5000/payroll/${user.id}`);
+        const historyRes = await fetch(`https://clinic-erp-beta.vercel.app/payroll/${user.id}`);
         setHistory(await historyRes.json());
       } catch (e) { console.error("Fetch error", e); }
     };
@@ -43,7 +43,7 @@ function Payroll() {
   const handleSave = async () => {
     if (!formData.employeeName) return alert("Select an employee");
     
-    const response = await fetch(`http://localhost:5000/payroll/${user.id}`, {
+    const response = await fetch(`https://clinic-erp-beta.vercel.app/payroll/${user.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...formData, netSalary: currentNetSalary })
@@ -51,7 +51,7 @@ function Payroll() {
 
     if (response.ok) {
       alert("Payroll Saved!");
-      const updated = await fetch(`http://localhost:5000/payroll/${user.id}`);
+      const updated = await fetch(`https://clinic-erp-beta.vercel.app/payroll/${user.id}`);
       setHistory(await updated.json());
     }
   };

@@ -6,7 +6,7 @@ function AccountsReceivables() {
   const [debts, setDebts] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/accounts-receivables/${user.id}`)
+    fetch(`https://clinic-erp-beta.vercel.app/accounts-receivables/${user.id}`)
       .then(res => res.json())
       .then(data => setDebts(data))
       .catch(err => console.error(err));

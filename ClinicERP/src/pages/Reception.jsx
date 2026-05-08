@@ -38,7 +38,7 @@ const [sessionInput, setSessionInput] = useState({ date: "", time: "", doctor: "
 
   // Load database options
   useEffect(() => {
-    axios.get(`http://localhost:5000/database/${user.id}`)
+    axios.get(`https://clinic-erp-beta.vercel.app/database/${user.id}`)
       .then(res => setDbData(res.data))
       .catch(err => console.error("Failed to fetch database:", err));
   }, [user]);
@@ -76,11 +76,11 @@ const handleSave = async () => {
     setSaving(true);
     try {
       // 1. Save Original Invoice
-      await axios.post(`http://localhost:5000/reception/${user.id}`, form);
+      await axios.post(`https://clinic-erp-beta.vercel.app/reception/${user.id}`, form);
 
       // 2. NEW: Save all pending sessions from the queue
       for (const s of pendingSessions) {
-        await axios.post(`http://localhost:5000/sessions/${user.id}`, {
+        await axios.post(`https://clinic-erp-beta.vercel.app/sessions/${user.id}`, {
           date: s.date,
           time: s.time,
           doctorName: s.doctor,

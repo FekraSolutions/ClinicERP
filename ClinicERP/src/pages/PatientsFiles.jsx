@@ -12,7 +12,7 @@ function PatientsFiles() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:5000/patients-list/${user.id}`)
+      fetch(`https://clinic-erp-beta.vercel.app/patients-list/${user.id}`)
         .then(res => res.json())
         .then(data => setPatients(Array.isArray(data) ? data : []))
         .catch(err => console.error("API Error:", err));
@@ -28,7 +28,7 @@ function PatientsFiles() {
     
     setSelectedPatient(p);
     try {
-      const res = await fetch(`http://localhost:5000/patient-notes/${user.id}/${encodeURIComponent(p.patientName)}`);
+      const res = await fetch(`https://clinic-erp-beta.vercel.app/patient-notes/${user.id}/${encodeURIComponent(p.patientName)}`);
       const data = await res.json();
       setNotes(data?.content || "");
       setNoteId(data?.id || null);
@@ -36,7 +36,7 @@ function PatientsFiles() {
   };
 
   const saveFile = async () => {
-    const res = await fetch("http://localhost:5000/patient-notes", {
+    const res = await fetch("https://clinic-erp-beta.vercel.app/patient-notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 

@@ -9,7 +9,7 @@ function Sessions() {
 
   useEffect(() => {
     if (user?.id) {
-      axios.get(`http://localhost:5000/sessions/${user.id}/${selectedDate}`)
+      axios.get(`https://clinic-erp-beta.vercel.app/sessions/${user.id}/${selectedDate}`)
         .then(res => setSessions(res.data))
         .catch(err => console.error(err));
     }

@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       // Proxy /invoices to backend
-      "/invoices": "http://localhost:5000"
+      "/invoices": "https://clinic-erp-beta.vercel.app"
     },
   },
 });

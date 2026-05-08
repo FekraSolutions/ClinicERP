@@ -10,7 +10,7 @@ function IncomeStatement() {
     if (!dates.start || !dates.end) return alert("Please select a date range.");
     try {
       const res = await fetch(
-        `http://localhost:5000/income-statement/${user.id}?startDate=${dates.start}&endDate=${dates.end}`
+        `https://clinic-erp-beta.vercel.app/income-statement/${user.id}?startDate=${dates.start}&endDate=${dates.end}`
       );
       const result = await res.json();
       setData(result);

@@ -13,7 +13,7 @@ function Expenses() {
 
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/expenses/${user.id}`);
+      const res = await axios.get(`https://clinic-erp-beta.vercel.app/expenses/${user.id}`);
       setExpenses(res.data);
     } catch (err) {
       console.error("Error loading expenses", err);
@@ -25,7 +25,7 @@ function Expenses() {
     if (!newRow.description || !newRow.amount) return alert("Please fill all fields");
 
     try {
-      const res = await axios.post(`http://localhost:5000/expenses/${user.id}`, newRow);
+      const res = await axios.post(`https://clinic-erp-beta.vercel.app/expenses/${user.id}`, newRow);
       setExpenses([...expenses, res.data]); // Add saved row to list
       setNewRow({ date: new Date().toISOString().split('T')[0], description: "", amount: "" }); // Reset input row
     } catch (err) {

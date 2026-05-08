@@ -11,7 +11,7 @@ function AuthProvider({ children }) {
 
 const login = async (username, password) => {
   try {
-    const response = await fetch("http://localhost:5000/login", {
+    const response = await fetch("https://clinic-erp-beta.vercel.app/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
