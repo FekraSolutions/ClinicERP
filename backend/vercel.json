@@ -1,12 +1,10 @@
 {
   "version": 2,
+  "installCommand": "npm install && npx prisma generate",
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node",
-      "config": {
-        "installCommand": "npm install && npx prisma generate"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [

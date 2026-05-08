@@ -1,5 +1,9 @@
 const { execSync } = require('child_process');
-execSync('npx prisma generate');
+try {
+  execSync('npx prisma generate');
+} catch (e) {
+  console.error('Prisma generate failed', e);
+}
 
 // ... your existing imports like const express = require('express');
 const express = require("express");
