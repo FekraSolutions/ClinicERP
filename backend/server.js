@@ -6,9 +6,14 @@ const app = express();
 const PORT = 5000;
 
 app.use(cors({
-  origin: true,
+  origin: "https://clinic-erp-frontend.vercel.app", // Use your actual frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+// Add this right below the cors block to manually handle OPTIONS
+app.options('*', cors());
 
 app.use(express.json());      // parse JSON body
 
