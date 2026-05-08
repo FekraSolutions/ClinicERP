@@ -6,7 +6,7 @@ const app = express();
 const PORT = 5000;
 
 app.use(cors({
-  origin: 'https://your-new-frontend-url.vercel.app' 
+  origin: 'https://clinic-erp-frontend.vercel.app'
 }));
 
 app.use(express.json());      // parse JSON body
