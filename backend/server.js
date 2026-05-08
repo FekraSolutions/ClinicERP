@@ -5,9 +5,7 @@ const { prisma } = require("./prisma.config");
 const app = express();
 const PORT = 5000;
 
-app.use(cors({
-  origin: 'https://clinic-erp-frontend.vercel.app'
-}));
+app.use(cors());
 
 app.use(express.json());      // parse JSON body
 
