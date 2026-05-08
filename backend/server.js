@@ -5,7 +5,10 @@ const { prisma } = require("./prisma.config");
 const app = express();
 const PORT = 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
 app.use(express.json());      // parse JSON body
 
