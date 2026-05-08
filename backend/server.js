@@ -5,12 +5,18 @@ const { prisma } = require("./prisma.config");
 const app = express();
 const PORT = 5000;
 
-app.use(cors({
-  origin: "https://clinic-erp-frontend.vercel.app", // Use your actual frontend URL
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+const corsOptions = {
+  origin: 'https://clinic-erp-frontend.vercel.app',
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
+
+// Explicitly handle the "OPTIONS" preflight request for all routes
+app.options('*', cors(corsOptions));
+
+
 
 // Add this right below the cors block to manually handle OPTIONS
 app.options('*', cors());
