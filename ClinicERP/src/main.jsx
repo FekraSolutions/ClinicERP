@@ -4,8 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import AuthProvider from './auth/AuthContext'
 import App from './App'
 
-// <--- ADD YOUR BACKEND URL HERE (The one from Vercel)
-axios.defaults.baseURL = "https://clinic-erp-beta.vercel.app";
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
