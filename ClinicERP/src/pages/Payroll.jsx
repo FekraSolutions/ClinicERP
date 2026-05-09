@@ -20,19 +20,30 @@ function Payroll() {
     return (Number(formData.basicSalary) + Number(formData.additions)) - Number(formData.deductions);
   }, [formData]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const empRes = await fetch(`https://clinic-erp-beta.vercel.app/database/${user.id}`);
-        const empData = await empRes.json();
-        setEmployees(empData.filter(row => row.employeeName));
+useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const empRes = await fetch(`https://clinic-erp-beta.vercel.app/database/${user.id}`);
+        const dbData = await empRes.json();
 
-        const historyRes = await fetch(`https://clinic-erp-beta.vercel.app/payroll/${user.id}`);
-        setHistory(await historyRes.json());
-      } catch (e) { console.error("Fetch error", e); }
-    };
-    if (user?.id) fetchData();
-  }, [user]);
+        // 🔹 Extract Employees AND Doctors
+        const allStaff = dbData.map(row => {
+          if (row.employeeName) return row.employeeName;
+          if (row.doctorName) return row.doctorName;
+          return null;
+        }).filter(name => name !== null); // Remove empty rows
+
+        // Remove duplicates (in case someone is listed as both)
+        const uniqueStaff = [...new Set(allStaff)];
+        
+        setEmployees(uniqueStaff);
+
+        const historyRes = await fetch(`https://clinic-erp-beta.vercel.app/payroll/${user.id}`);
+        setHistory(await historyRes.json());
+      } catch (e) { console.error("Fetch error", e); }
+    };
+    if (user?.id) fetchData();
+  }, [user]);
 
   const filteredHistory = history.filter(rec => 
     filterMonth ? rec.period.startsWith(filterMonth) : true
@@ -104,10 +115,16 @@ function Payroll() {
       
       {/* Input Section - Added 'payroll-form' and 'no-print' classes */}
       <div className="payroll-form no-print" style={{ display: 'grid', gap: '10px', background: '#f4f4f4', padding: '20px', borderRadius: '8px' }}>
-        <select value={formData.employeeName} onChange={(e) => setFormData({...formData, employeeName: e.target.value})}>
-          <option value="">Select Employee</option>
-          {employees.map(emp => <option key={emp.id} value={emp.employeeName}>{emp.employeeName}</option>)}
-        </select>
+<select 
+  value={formData.employeeName} 
+  onChange={(e) => setFormData({...formData, employeeName: e.target.value})}
+>
+  <option value="">Select Staff Member</option>
+  {/* Update this line below */}
+  {employees.map((name, index) => (
+    <option key={index} value={name}>{name}</option>
+  ))}
+</select>
         
         <input type="number" placeholder="Basic Salary" onChange={(e) => setFormData({...formData, basicSalary: e.target.value})} />
         <input type="number" placeholder="Additions" onChange={(e) => setFormData({...formData, additions: e.target.value})} />
