@@ -54,6 +54,29 @@ function Login() {
         <button type="submit" style={{ padding: "10px", backgroundColor: "#1e293b", color: "white", cursor: "pointer" }}>
           Login
         </button>
+        <button type="submit" style={{ padding: "10px", backgroundColor: "#1e293b", color: "white", cursor: "pointer" }}>
+  Login
+</button>
+
+{/* NEW SUBSCRIBE BUTTON - EXACT MATCH */}
+<a 
+  href="https://fekrasolutions.github.io/Remote-Virtual-Assistance/subscription.html" 
+  target="_blank" 
+  rel="noopener noreferrer"
+  style={{ 
+    display: "block",
+    textAlign: "center",
+    marginTop: "10px",
+    padding: "10px", 
+    backgroundColor: "#1e293b", 
+    color: "white", 
+    cursor: "pointer",
+    textDecoration: "none",
+    border: "none"
+  }}
+>
+  Subscribe
+</a>
         {/* --- MARKETING SECTION --- */}
 <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
   
@@ -86,7 +109,7 @@ function Login() {
     backgroundColor: '#fffcf0',
     textAlign: 'center'
   }}>
-    <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>Ready to Scale?</h3>
+    <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>Book a Demo Now</h3>
     <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>Book a personal demo with our experts.</p>
     
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -104,7 +127,7 @@ function Login() {
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}
       >
-        💬 WhatsApp Demo
+        💬 WhatsApp
       </a>
 
       {/* Call & Email - Simple Links */}
