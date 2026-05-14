@@ -54,9 +54,6 @@ function Login() {
         <button type="submit" style={{ padding: "10px", backgroundColor: "#1e293b", color: "white", cursor: "pointer" }}>
           Login
         </button>
-        <button type="submit" style={{ padding: "10px", backgroundColor: "#1e293b", color: "white", cursor: "pointer" }}>
-  Login
-</button>
 
 {/* NEW SUBSCRIBE BUTTON - EXACT MATCH */}
 <a 
