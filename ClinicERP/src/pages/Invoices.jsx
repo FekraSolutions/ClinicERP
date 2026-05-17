@@ -92,21 +92,34 @@ function Invoices() {
   return (
     <div style={{ padding: "20px" }}>
       {/* CSS STYLING ENGINE FOR THE PRINT LAYER */}
+{/* CSS STYLING ENGINE FOR THE PRINT LAYER */}
       <style>
         {`
           .invoice-print-preview { display: none; }
           
           @media print {
+            /* Force the browser to restrict pages to exactly 1 sheet if content fits */
+            html, body {
+              height: 100%;
+              max-height: 100vh;
+              overflow: hidden !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+
             body * { visibility: hidden; }
             .invoice-print-preview, .invoice-print-preview * { visibility: visible; }
+            
             .invoice-print-preview {
               display: block !important;
               position: absolute;
               left: 0;
               top: 0;
               width: 100%;
+              max-width: 750px;
               padding: 20px;
               color: #000 !important;
+              box-sizing: border-box;
             }
             .no-print-area { display: none !important; }
           }
