@@ -7,8 +7,7 @@ function Invoices() {
   const [error, setError] = useState(null);
   const [activeInvoice, setActiveInvoice] = useState(null);
 
-  const rawUser = localStorage.getItem("user");
-  const storedUser = rawUser ? JSON.parse(rawUser) : null;
+  const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser ? storedUser.id : null;
 
   useEffect(() => {
@@ -44,13 +43,12 @@ function Invoices() {
   const sendWhatsApp = (inv) => {
     if (!inv.phone) return alert("No phone number recorded for this patient.");
     
-    // Convert 002010... to standard country code format 2010...
     let cleanPhone = inv.phone.replace(/\D/g, "");
     if (cleanPhone.startsWith("00")) {
       cleanPhone = cleanPhone.substring(2);
     }
 
-    const textMessage = `*INVOICE RECIEPT*\n\n` +
+    const textMessage = `*INVOICE RECEIPT*\n\n` +
       `*Patient:* ${inv.patientName}\n` +
       `*Date:* ${new Date(inv.date).toLocaleDateString()}\n` +
       `*Service:* ${inv.service}\n` +
@@ -60,13 +58,12 @@ function Invoices() {
       `Thank you for choosing our clinic!`;
 
     const encodedText = encodeURIComponent(textMessage);
-    // Universal URL that forces browser window to initialize chat sequence directly
     const whatsappUrl = `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`;
     
     window.open(whatsappUrl, "_blank");
   };
 
-  // 3. ROBUST EMAIL CONSTRUCTOR 
+  // 3. ROBUST EMAIL CONSTRUCTOR
   const sendEmail = (inv) => {
     if (!inv.email) return alert("No email address recorded for this patient.");
     
@@ -97,10 +94,8 @@ function Invoices() {
       {/* CSS STYLING ENGINE FOR THE PRINT LAYER */}
       <style>
         {`
-          /* SCREEN ONLY DESIGN STYLE */
           .invoice-print-preview { display: none; }
           
-          /* SYSTEM PRINT DIALOG CONTROLLER OVERRIDE */
           @media print {
             body * { visibility: hidden; }
             .invoice-print-preview, .invoice-print-preview * { visibility: visible; }
@@ -125,7 +120,7 @@ function Invoices() {
             <h1 style={{ margin: "0 0 5px 0", fontSize: "24px", letterSpacing: "2px" }}>OFFICIAL INVOICE</h1>
             <p style={{ margin: "2px 0" }}>{activeInvoice.companyName || "MEDICAL CLINIC CENTER"}</p>
             <p style={{ margin: "2px 0" }}>{activeInvoice.companyAddress || "Clinic Corporate Address Line"}</p>
-            <p style={{ margin: "2px 0", fontSize: "12px" }}>Tax Reg: ${activeInvoice.taxNumber || "N/A"} | CR: ${activeInvoice.registrationNumber || "N/A"}</p>
+            <p style={{ margin: "2px 0", fontSize: "12px" }}>Tax Reg: {activeInvoice.taxNumber || "N/A"} | CR: {activeInvoice.registrationNumber || "N/A"}</p>
           </div>
           
           <hr style={{ borderTop: "2px dashed #000", margin: "15px 0" }} />
@@ -133,16 +128,16 @@ function Invoices() {
           <table width="100%" style={{ fontSize: "14px", marginBottom: "20px", lineHeight: "1.6" }}>
             <tbody>
               <tr>
-                <td><strong>Invoice No:</strong> #INV-${activeInvoice.id || "100" + activeInvoice.index}</td>
-                <td style={{ textAlign: "right" }}><strong>Date:</strong> ${new Date(activeInvoice.date).toLocaleDateString()}</td>
+                <td><strong>Invoice No:</strong> #INV-${activeInvoice.id || "100"}</td>
+                <td style={{ textAlign: "right" }}><strong>Date:</strong> {new Date(activeInvoice.date).toLocaleDateString()}</td>
               </tr>
               <tr>
-                <td><strong>Patient Name:</strong> ${activeInvoice.patientName}</td>
-                <td style={{ textAlign: "right" }}><strong>Time:</strong> ${activeInvoice.time || ""}</td>
+                <td><strong>Patient Name:</strong> {activeInvoice.patientName}</td>
+                <td style={{ textAlign: "right" }}><strong>Time:</strong> {activeInvoice.time || ""}</td>
               </tr>
               <tr>
-                <td><strong>Patient ID:</strong> ${activeInvoice.patientId || "N/A"}</td>
-                <td style={{ textAlign: "right" }}><strong>Doctor:</strong> ${activeInvoice.doctor || "N/A"}</td>
+                <td><strong>Patient ID:</strong> {activeInvoice.patientId || "N/A"}</td>
+                <td style={{ textAlign: "right" }}><strong>Doctor:</strong> {activeInvoice.doctor || "N/A"}</td>
               </tr>
             </tbody>
           </table>
@@ -172,7 +167,7 @@ function Invoices() {
                 <td style={{ textAlign: "right" }}>{activeInvoice.priceAfterDiscount || "0.00"}</td>
               </tr>
               <tr style={{ color: "green" }}>
-                <td colSpan="2" style={{ textAlign: "right" }}>Amount Received Payment (${activeInvoice.payMethod || "Cash"}):</td>
+                <td colSpan="2" style={{ textAlign: "right" }}>Amount Received Payment ({activeInvoice.payMethod || "Cash"}):</td>
                 <td style={{ textAlign: "right", fontWeight: "bold" }}>{activeInvoice.paid || "0.00"}</td>
               </tr>
               <tr style={{ fontWeight: "bold", borderTop: "2px double #000" }}>
@@ -191,64 +186,107 @@ function Invoices() {
 
       {/* THE MAIN INTERFACE VIEW LAYER */}
       <div className="no-print-area">
-        <h2>Invoices Workflow Portal</h2>
+        <h2>Invoices</h2>
         <div style={{ overflowX: "auto" }}>
-          <table border="1" cellPadding="5" style={{ minWidth: "1500px", borderCollapse: "collapse" }}>
+          <table
+            border="1"
+            cellPadding="5"
+            style={{ minWidth: "1600px", borderCollapse: "collapse" }}
+          >
             <thead>
-              <tr style={{ backgroundColor: "#f1f5f9" }}>
+              <tr>
                 <th>#</th>
-                <th>Actions Matrix Controls</th>
+                {/* 3 MAGNIFICENT COLUMNS INTEGRATED CLEANLY */}
+                <th>Print</th>
+                <th>WhatsApp</th>
+                <th>Email Action</th>
+                
+                {/* ALL YOUR 21 ORIGINAL HEADERS UNTOUCHED */}
                 <th>Date</th>
                 <th>Time</th>
                 <th>Patient Name</th>
                 <th>Age</th>
                 <th>ID</th>
                 <th>Phone</th>
-                <th>Email Address</th>
+                <th>Address</th>
+                <th>Email</th>
                 <th>Service</th>
                 <th>Doctor</th>
-                <th>Price After Discount</th>
+                <th>Price</th>
+                <th>Pay Method</th>
                 <th>Paid</th>
                 <th>Remaining</th>
+                <th>Discount Amount</th>
+                <th>Sessions</th>
+                <th>Price After Discount</th>
+                <th>Company Name</th>
+                <th>Company Address</th>
+                <th>Registration Number</th>
+                <th>Tax Number</th>
               </tr>
             </thead>
             <tbody>
-              {!Array.isArray(invoices) || invoices.length === 0 ? (
+              {invoices.length === 0 ? (
                 <tr>
-                  <td colSpan="14" style={{ textAlign: "center" }}>No records registered yet.</td>
+                  <td colSpan="25" style={{ textAlign: "center" }}>No invoices yet</td>
                 </tr>
               ) : (
                 invoices.map((inv, index) => (
                   <tr key={inv.id || index}>
                     <td>{index + 1}</td>
                     
-                    {/* MERGED CLEAN ACTION BUTTONS GRID CELL */}
-                    <td>
-                      <div style={{ display: "flex", gap: "5px" }}>
-                        <button onClick={() => handlePrint(inv)} style={{ padding: "4px 8px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
-                          🖨️ Print Receipt
-                        </button>
-                        <button onClick={() => sendWhatsApp(inv)} style={{ padding: "4px 8px", backgroundColor: "#22c55e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
-                          💬 WhatsApp
-                        </button>
-                        <button onClick={() => sendEmail(inv)} style={{ padding: "4px 8px", backgroundColor: "#ea580c", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
-                          ✉️ Mail Client
-                        </button>
-                      </div>
+                    {/* PRINT ACTION ROW CELL */}
+                    <td style={{ textAlign: "center" }}>
+                      <button 
+                        onClick={() => handlePrint(inv)} 
+                        style={{ padding: "4px 8px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                      >
+                        🖨️ Print
+                      </button>
                     </td>
 
+                    {/* WHATSAPP ACTION ROW CELL */}
+                    <td style={{ textAlign: "center" }}>
+                      <button 
+                        onClick={() => sendWhatsApp(inv)} 
+                        style={{ padding: "4px 8px", backgroundColor: "#22c55e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                      >
+                        💬 Send
+                      </button>
+                    </td>
+
+                    {/* MAIL CLIENT ACTION ROW CELL */}
+                    <td style={{ textAlign: "center" }}>
+                      <button 
+                        onClick={() => sendEmail(inv)} 
+                        style={{ padding: "4px 8px", backgroundColor: "#ea580c", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                      >
+                        ✉️ Mail
+                      </button>
+                    </td>
+
+                    {/* ALL YOUR ORIGINAL ROW DATA DATA BLOCKS EXCEL CELLS */}
                     <td>{inv.date ? new Date(inv.date).toLocaleDateString() : ""}</td>
                     <td>{inv.time || ""}</td>
                     <td>{inv.patientName || ""}</td>
                     <td>{inv.age || ""}</td>
                     <td>{inv.patientId || ""}</td>
                     <td>{inv.phone || ""}</td>
+                    <td>{inv.address || ""}</td>
                     <td>{inv.email || ""}</td>
                     <td>{inv.service || ""}</td>
                     <td>{inv.doctor || ""}</td>
-                    <td>{inv.priceAfterDiscount || ""}</td>
+                    <td>{inv.price || ""}</td>
+                    <td>{inv.payMethod || ""}</td>
                     <td>{inv.paid || ""}</td>
                     <td>{inv.remaining || ""}</td>
+                    <td>{inv.discountAmount || ""}</td>
+                    <td>{inv.sessions || ""}</td>
+                    <td>{inv.priceAfterDiscount || ""}</td>
+                    <td>{inv.companyName || ""}</td>
+                    <td>{inv.companyAddress || ""}</td>
+                    <td>{inv.registrationNumber || ""}</td>
+                    <td>{inv.taxNumber || ""}</td>
                   </tr>
                 ))
               )}
