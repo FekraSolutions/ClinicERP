@@ -114,8 +114,18 @@ function Invoices() {
       </style>
 
       {/* RETAIL STYLE DESIGNED INVOICE COMPONENT CONTAINER */}
+{/* RETAIL STYLE DESIGNED INVOICE COMPONENT CONTAINER */}
       {activeInvoice && (
-        <div className="invoice-print-preview" style={{ fontFamily: "'Courier New', Courier, monospace", maxWidth: "800px", margin: "0 auto", border: "1px solid #000", padding: "30px", backgroundColor: "#fff" }}>
+        <div className="invoice-print-preview" style={{ 
+          fontFamily: "'Courier New', Courier, monospace", 
+          width: "100%",
+          maxWidth: "750px", /* Fits perfectly on standard A4 paper width */
+          margin: "0 auto", 
+          border: "1px solid #000", 
+          padding: "20px", 
+          backgroundColor: "#fff",
+          boxSizing: "border-box" /* Ensures padding doesn't push width out */
+        }}>
           <div style={{ textAlign: "center", marginBottom: "20px" }}>
             <h1 style={{ margin: "0 0 5px 0", fontSize: "24px", letterSpacing: "2px" }}>OFFICIAL INVOICE</h1>
             <p style={{ margin: "2px 0" }}>{activeInvoice.companyName || "MEDICAL CLINIC CENTER"}</p>
@@ -125,34 +135,34 @@ function Invoices() {
           
           <hr style={{ borderTop: "2px dashed #000", margin: "15px 0" }} />
           
-          <table width="100%" style={{ fontSize: "14px", marginBottom: "20px", lineHeight: "1.6" }}>
+          <table width="100%" style={{ fontSize: "14px", marginBottom: "20px", lineHeight: "1.6", tableLayout: "fixed" }}>
             <tbody>
               <tr>
-                <td><strong>Invoice No:</strong> #INV-${activeInvoice.id || "100"}</td>
-                <td style={{ textAlign: "right" }}><strong>Date:</strong> {new Date(activeInvoice.date).toLocaleDateString()}</td>
+                <td style={{ wordBreak: "break-word" }}><strong>Invoice No:</strong> #INV-{activeInvoice.id || "100"}</td>
+                <td style={{ textAlign: "right", wordBreak: "break-word" }}><strong>Date:</strong> {new Date(activeInvoice.date).toLocaleDateString()}</td>
               </tr>
               <tr>
-                <td><strong>Patient Name:</strong> {activeInvoice.patientName}</td>
-                <td style={{ textAlign: "right" }}><strong>Time:</strong> {activeInvoice.time || ""}</td>
+                <td style={{ wordBreak: "break-word" }}><strong>Patient Name:</strong> {activeInvoice.patientName}</td>
+                <td style={{ textAlign: "right", wordBreak: "break-word" }}><strong>Time:</strong> {activeInvoice.time || ""}</td>
               </tr>
               <tr>
-                <td><strong>Patient ID:</strong> {activeInvoice.patientId || "N/A"}</td>
-                <td style={{ textAlign: "right" }}><strong>Doctor:</strong> {activeInvoice.doctor || "N/A"}</td>
+                <td style={{ wordBreak: "break-word" }}><strong>Patient ID:</strong> {activeInvoice.patientId || "N/A"}</td>
+                <td style={{ textAlign: "right", wordBreak: "break-word" }}><strong>Doctor:</strong> {activeInvoice.doctor || "N/A"}</td>
               </tr>
             </tbody>
           </table>
 
-          <table width="100%" border="1" cellPadding="8" style={{ borderCollapse: "collapse", borderColor: "#000", fontSize: "14px" }}>
+          <table width="100%" border="1" cellPadding="8" style={{ borderCollapse: "collapse", borderColor: "#000", fontSize: "14px", tableLayout: "fixed" }}>
             <thead>
               <tr style={{ background: "#f2f2f2" }}>
                 <th style={{ textAlign: "left" }}>Description Summary / Services</th>
-                <th style={{ width: "80px", textAlign: "center" }}>Sessions</th>
-                <th style={{ width: "120px", textAlign: "right" }}>Amount</th>
+                <th style={{ width: "90px", textAlign: "center" }}>Sessions</th>
+                <th style={{ width: "110px", textAlign: "right" }}>Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>{activeInvoice.service || "General Medical Examination consultation"}</td>
+                <td style={{ wordBreak: "break-word" }}>{activeInvoice.service || "General Medical Examination consultation"}</td>
                 <td style={{ textAlign: "center" }}>{activeInvoice.sessions || "1"}</td>
                 <td style={{ textAlign: "right" }}>{activeInvoice.price || "0.00"}</td>
               </tr>
