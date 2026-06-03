@@ -5,6 +5,8 @@ import axios from "axios";
 function Reception() {
   const { user } = useContext(AuthContext);
   const [dbData, setDbData] = useState([]);
+  // NEW STATE: To hold real patient records for the suggestion engine
+  const [patientHistory, setPatientHistory] = useState([]);
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -36,14 +38,17 @@ function Reception() {
     return <p style={{ padding: "20px" }}>Please log in to access the Reception page.</p>;
   }
 
-// Load database options
+  // Load database options + Fetch historical invoices for patients data
   useEffect(() => {
+    // Keep your original loading logic completely untouched
     axios.get(`https://clinic-erp-beta.vercel.app/database/${user.id}`)
-      .then(res => {
-        console.log("DATABASE RAW DATA SAMPLE:", res.data[0]); // <--- ADD THIS LINE
-        setDbData(res.data);
-      })
+      .then(res => setDbData(res.data))
       .catch(err => console.error("Failed to fetch database:", err));
+
+    // NEW: Fetch past invoices to capture real patient details
+    axios.get(`https://clinic-erp-beta.vercel.app/invoices/${user.id}`)
+      .then(res => setPatientHistory(res.data || []))
+      .catch(err => console.error("Failed to fetch historical patient records:", err));
   }, [user]);
 
   // Auto calculate priceAfterDiscount and remaining
@@ -63,10 +68,10 @@ function Reception() {
     }));
   }, [form.service, form.paid, form.discountAmount, dbData]);
 
-  // 1. EXTRACT UNIQUE DATA LISTS FOR THE 3 DROPDOWNS
-  const uniqueNames = [...new Set(dbData.map(d => d.patientName).filter(Boolean))];
-  const uniqueIds = [...new Set(dbData.map(d => d.patientId).filter(Boolean))];
-  const uniquePhones = [...new Set(dbData.map(d => d.phone).filter(Boolean))];
+  // 1. EXTRACT UNIQUE DATA LISTS FROM THE REAL INVOICE HISTORY
+  const uniqueNames = [...new Set(patientHistory.map(d => d.patientName).filter(Boolean))];
+  const uniqueIds = [...new Set(patientHistory.map(d => d.patientId).filter(Boolean))];
+  const uniquePhones = [...new Set(patientHistory.map(d => d.phone).filter(Boolean))];
 
   // 2. ENHANCED MULTI-FIELD AUTOFILL SELECTION ENGINE
   const handleChange = (field, value) => {
@@ -75,16 +80,16 @@ function Reception() {
 
       let matchedPatient = null;
 
-      // Find match based on whichever field is currently changing
+      // Scan history based on whichever field is currently being typed into
       if (field === "patientName" && value.trim()) {
-        matchedPatient = dbData.find(d => d.patientName && d.patientName.trim().toLowerCase() === value.trim().toLowerCase());
+        matchedPatient = patientHistory.find(d => d.patientName && d.patientName.trim().toLowerCase() === value.trim().toLowerCase());
       } else if (field === "patientId" && value.trim()) {
-        matchedPatient = dbData.find(d => d.patientId && d.patientId.trim() === value.trim());
+        matchedPatient = patientHistory.find(d => d.patientId && d.patientId.trim() === value.trim());
       } else if (field === "phone" && value.trim()) {
-        matchedPatient = dbData.find(d => d.phone && d.phone.trim() === value.trim());
+        matchedPatient = patientHistory.find(d => d.phone && d.phone.trim() === value.trim());
       }
 
-      // If a historical matching link is detected, auto populate the remaining data fields
+      // If a match is found in the history, auto-populate everything instantly
       if (matchedPatient) {
         updatedForm.patientName = matchedPatient.patientName || updatedForm.patientName;
         updatedForm.age = matchedPatient.age || "";
@@ -125,6 +130,9 @@ function Reception() {
       }
 
       alert("Invoice and sessions saved!");
+
+      // Update patient records cache locally on screen so if they are billed again instantly, they exist!
+      setPatientHistory(prev => [form, ...prev]);
 
       // 3. Reset form (Exactly as your original)
       setForm({
@@ -243,7 +251,7 @@ function Reception() {
           <label>Service</label>
           <select value={form.service} onChange={e => handleChange("service", e.target.value)}>
             <option value="">Select Service</option>
-            {dbData.map(d => <option key={d.id} value={d.serviceName}>{d.serviceName}</option>)}
+            {dbData.map(d => d.serviceName && <option key={d.id} value={d.serviceName}>{d.serviceName}</option>)}
           </select>
         </div>
 
@@ -251,7 +259,7 @@ function Reception() {
           <label>Doctor</label>
           <select value={form.doctor} onChange={e => handleChange("doctor", e.target.value)}>
             <option value="">Select Doctor</option>
-            {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
+            {dbData.map(d => d.doctorName && <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
           </select>
         </div>
 
@@ -330,7 +338,7 @@ function Reception() {
           <label>Doctor</label>
           <select value={sessionInput.doctor} onChange={e => setSessionInput({...sessionInput, doctor: e.target.value})}>
             <option value="">Select Doctor</option>
-            {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
+            {dbData.map(d => d.doctorName && <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
           </select>
         </div>
         <button type="button" onClick={addSessionToQueue} style={{ height: "40px", marginBottom: "10px" }}>+ Add Session</button>
