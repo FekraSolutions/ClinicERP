@@ -30,7 +30,7 @@ function Reception() {
   });
   const [saving, setSaving] = useState(false);
   const [pendingSessions, setPendingSessions] = useState([]); 
-const [sessionInput, setSessionInput] = useState({ date: "", time: "", doctor: "" });
+  const [sessionInput, setSessionInput] = useState({ date: "", time: "", doctor: "" });
 
   if (!user?.id) {
     return <p style={{ padding: "20px" }}>Please log in to access the Reception page.</p>;
@@ -60,25 +60,53 @@ const [sessionInput, setSessionInput] = useState({ date: "", time: "", doctor: "
     }));
   }, [form.service, form.paid, form.discountAmount, dbData]);
 
+  // EXTRACT UNIQUE PATIENTS LIST FOR AUTO-SUGGESTIONS
+  const existingPatients = dbData
+    .filter(row => row.patientName) 
+    .reduce((unique, item) => {
+      if (!unique.some(p => p.patientName.trim().toLowerCase() === item.patientName.trim().toLowerCase())) {
+        unique.push(item);
+      }
+      return unique;
+    }, []);
+
   const handleChange = (field, value) => {
-    setForm(f => ({ ...f, [field]: value }));
+    setForm(f => {
+      const updatedForm = { ...f, [field]: value };
+
+      // AUTO-FILL ENGINE LOGIC
+      if (field === "patientName") {
+        const foundPatient = existingPatients.find(
+          p => p.patientName.trim().toLowerCase() === value.trim().toLowerCase()
+        );
+        if (foundPatient) {
+          updatedForm.age = foundPatient.age || "";
+          updatedForm.patientId = foundPatient.patientId || "";
+          updatedForm.phone = foundPatient.phone || "";
+          updatedForm.address = foundPatient.address || "";
+          updatedForm.email = foundPatient.email || "";
+        }
+      }
+
+      return updatedForm;
+    });
   };
 
   const addSessionToQueue = () => {
-  if (!sessionInput.date || !sessionInput.time || !sessionInput.doctor) {
-    return alert("Please select date, time, and doctor for the session.");
-  }
-  setPendingSessions([...pendingSessions, sessionInput]);
-  setSessionInput({ date: "", time: "", doctor: "" });
-};
+    if (!sessionInput.date || !sessionInput.time || !sessionInput.doctor) {
+      return alert("Please select date, time, and doctor for the session.");
+    }
+    setPendingSessions([...pendingSessions, sessionInput]);
+    setSessionInput({ date: "", time: "", doctor: "" });
+  };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
       // 1. Save Original Invoice
       await axios.post(`https://clinic-erp-beta.vercel.app/reception/${user.id}`, form);
 
-      // 2. NEW: Save all pending sessions from the queue
+      // 2. Save all pending sessions from the queue
       for (const s of pendingSessions) {
         await axios.post(`https://clinic-erp-beta.vercel.app/sessions/${user.id}`, {
           date: s.date,
@@ -92,7 +120,7 @@ const handleSave = async () => {
 
       alert("Invoice and sessions saved!");
 
-      // 3. Reset form (Exactly as your original)
+      // 3. Reset form
       setForm({
         date: new Date().toISOString().split("T")[0],
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -117,12 +145,11 @@ const handleSave = async () => {
         taxNumber: ""
       });
 
-      // 4. NEW: Clear the sessions queue after successful save
+      // 4. Clear the sessions queue
       setPendingSessions([]);
       
     } catch (err) {
       console.error(err);
-      // Enhanced alert to show the specific error (like the overlap conflict from server)
       alert(err.response?.data?.error || "Failed to save data");
     } finally {
       setSaving(false);
@@ -146,9 +173,21 @@ const handleSave = async () => {
           <input type="text" value={form.time} readOnly />
         </div>
 
+        {/* PATIENT NAME COMPONENT INPUT WITH NATIVE SUGGESTIONS LIST LINKING */}
         <div style={fieldStyle}>
           <label>Patient Name</label>
-          <input type="text" value={form.patientName} onChange={e => handleChange("patientName", e.target.value)} />
+          <input 
+            type="text" 
+            value={form.patientName} 
+            onChange={e => handleChange("patientName", e.target.value)} 
+            list="patient-suggestions"
+            placeholder="Type or select patient..."
+          />
+          <datalist id="patient-suggestions">
+            {existingPatients.map((p, idx) => (
+              <option key={p.id || idx} value={p.patientName} />
+            ))}
+          </datalist>
         </div>
 
         <div style={fieldStyle}>
@@ -180,7 +219,8 @@ const handleSave = async () => {
           <label>Service</label>
           <select value={form.service} onChange={e => handleChange("service", e.target.value)}>
             <option value="">Select Service</option>
-            {dbData.map(d => <option key={d.id} value={d.serviceName}>{d.serviceName}</option>)}
+            {/* Filter array to accurately isolate specific unique Service data entries */}
+            {dbData.filter(d => d.serviceName).map((d, idx) => <option key={d.id || idx} value={d.serviceName}>{d.serviceName}</option>)}
           </select>
         </div>
 
@@ -188,7 +228,8 @@ const handleSave = async () => {
           <label>Doctor</label>
           <select value={form.doctor} onChange={e => handleChange("doctor", e.target.value)}>
             <option value="">Select Doctor</option>
-            {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
+            {/* Filter array to accurately isolate specific unique Doctor data entries */}
+            {dbData.filter(d => d.doctorName).map((d, idx) => <option key={d.id || idx} value={d.doctorName}>{d.doctorName}</option>)}
           </select>
         </div>
 
@@ -252,34 +293,34 @@ const handleSave = async () => {
         </div>
 
       </div>
-<hr style={{ margin: "30px 0" }} />
-<h3>Schedule Sessions</h3>
-<div style={{ display: "flex", gap: "10px", alignItems: "flex-end", background: "#f9f9f9", padding: "15px", borderRadius: "8px" }}>
-  <div style={fieldStyle}>
-    <label>Session Date</label>
-    <input type="date" value={sessionInput.date} onChange={e => setSessionInput({...sessionInput, date: e.target.value})} />
-  </div>
-  <div style={fieldStyle}>
-    <label>Session Time</label>
-    <input type="time" value={sessionInput.time} onChange={e => setSessionInput({...sessionInput, time: e.target.value})} />
-  </div>
-  <div style={fieldStyle}>
-    <label>Doctor</label>
-    <select value={sessionInput.doctor} onChange={e => setSessionInput({...sessionInput, doctor: e.target.value})}>
-      <option value="">Select Doctor</option>
-      {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
-    </select>
-  </div>
-  <button type="button" onClick={addSessionToQueue} style={{ height: "40px", marginBottom: "10px" }}>+ Add Session</button>
-</div>
+      <hr style={{ margin: "30px 0" }} />
+      <h3>Schedule Sessions</h3>
+      <div style={{ display: "flex", gap: "10px", alignItems: "flex-end", background: "#f9f9f9", padding: "15px", borderRadius: "8px" }}>
+        <div style={fieldStyle}>
+          <label>Session Date</label>
+          <input type="date" value={sessionInput.date} onChange={e => setSessionInput({...sessionInput, date: e.target.value})} />
+        </div>
+        <div style={fieldStyle}>
+          <label>Session Time</label>
+          <input type="time" value={sessionInput.time} onChange={e => setSessionInput({...sessionInput, time: e.target.value})} />
+        </div>
+        <div style={fieldStyle}>
+          <label>Doctor</label>
+          <select value={sessionInput.doctor} onChange={e => setSessionInput({...sessionInput, doctor: e.target.value})}>
+            <option value="">Select Doctor</option>
+            {dbData.filter(d => d.doctorName).map((d, idx) => <option key={d.id || idx} value={d.doctorName}>{d.doctorName}</option>)}
+          </select>
+        </div>
+        <button type="button" onClick={addSessionToQueue} style={{ height: "40px", marginBottom: "10px" }}>+ Add Session</button>
+      </div>
 
-<div style={{ marginTop: "10px" }}>
-  {pendingSessions.map((s, idx) => (
-    <div key={idx} style={{ padding: "5px", borderBottom: "1px solid #ddd" }}>
-      ✅ {s.date} at {s.time} with Dr. {s.doctor}
-    </div>
-  ))}
-</div>
+      <div style={{ marginTop: "10px" }}>
+        {pendingSessions.map((s, idx) => (
+          <div key={idx} style={{ padding: "5px", borderBottom: "1px solid #ddd" }}>
+            ✅ {s.date} at {s.time} with Dr. {s.doctor}
+          </div>
+        ))}
+      </div>
       <button style={{ marginTop: "20px", padding: "10px 20px" }} onClick={handleSave} disabled={saving}>
         {saving ? "Saving..." : "Save Invoice"}
       </button>
