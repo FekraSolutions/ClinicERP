@@ -36,10 +36,13 @@ function Reception() {
     return <p style={{ padding: "20px" }}>Please log in to access the Reception page.</p>;
   }
 
-  // Load database options
+// Load database options
   useEffect(() => {
     axios.get(`https://clinic-erp-beta.vercel.app/database/${user.id}`)
-      .then(res => setDbData(res.data))
+      .then(res => {
+        console.log("DATABASE RAW DATA SAMPLE:", res.data[0]); // <--- ADD THIS LINE
+        setDbData(res.data);
+      })
       .catch(err => console.error("Failed to fetch database:", err));
   }, [user]);
 
