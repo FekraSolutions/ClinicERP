@@ -60,32 +60,35 @@ function Reception() {
     }));
   }, [form.service, form.paid, form.discountAmount, dbData]);
 
-  // EXTRACT UNIQUE PATIENTS LIST FOR AUTO-SUGGESTIONS
-  const existingPatients = dbData
-    .filter(row => row.patientName) 
-    .reduce((unique, item) => {
-      if (!unique.some(p => p.patientName.trim().toLowerCase() === item.patientName.trim().toLowerCase())) {
-        unique.push(item);
-      }
-      return unique;
-    }, []);
+  // 1. EXTRACT UNIQUE DATA LISTS FOR THE 3 DROPDOWNS
+  const uniqueNames = [...new Set(dbData.map(d => d.patientName).filter(Boolean))];
+  const uniqueIds = [...new Set(dbData.map(d => d.patientId).filter(Boolean))];
+  const uniquePhones = [...new Set(dbData.map(d => d.phone).filter(Boolean))];
 
+  // 2. ENHANCED MULTI-FIELD AUTOFILL SELECTION ENGINE
   const handleChange = (field, value) => {
     setForm(f => {
       const updatedForm = { ...f, [field]: value };
 
-      // AUTO-FILL ENGINE LOGIC
-      if (field === "patientName") {
-        const foundPatient = existingPatients.find(
-          p => p.patientName.trim().toLowerCase() === value.trim().toLowerCase()
-        );
-        if (foundPatient) {
-          updatedForm.age = foundPatient.age || "";
-          updatedForm.patientId = foundPatient.patientId || "";
-          updatedForm.phone = foundPatient.phone || "";
-          updatedForm.address = foundPatient.address || "";
-          updatedForm.email = foundPatient.email || "";
-        }
+      let matchedPatient = null;
+
+      // Find match based on whichever field is currently changing
+      if (field === "patientName" && value.trim()) {
+        matchedPatient = dbData.find(d => d.patientName && d.patientName.trim().toLowerCase() === value.trim().toLowerCase());
+      } else if (field === "patientId" && value.trim()) {
+        matchedPatient = dbData.find(d => d.patientId && d.patientId.trim() === value.trim());
+      } else if (field === "phone" && value.trim()) {
+        matchedPatient = dbData.find(d => d.phone && d.phone.trim() === value.trim());
+      }
+
+      // If a historical matching link is detected, auto populate the remaining data fields
+      if (matchedPatient) {
+        updatedForm.patientName = matchedPatient.patientName || updatedForm.patientName;
+        updatedForm.age = matchedPatient.age || "";
+        updatedForm.patientId = matchedPatient.patientId || updatedForm.patientId;
+        updatedForm.phone = matchedPatient.phone || updatedForm.phone;
+        updatedForm.address = matchedPatient.address || "";
+        updatedForm.email = matchedPatient.email || "";
       }
 
       return updatedForm;
@@ -106,7 +109,7 @@ function Reception() {
       // 1. Save Original Invoice
       await axios.post(`https://clinic-erp-beta.vercel.app/reception/${user.id}`, form);
 
-      // 2. Save all pending sessions from the queue
+      // 2. NEW: Save all pending sessions from the queue
       for (const s of pendingSessions) {
         await axios.post(`https://clinic-erp-beta.vercel.app/sessions/${user.id}`, {
           date: s.date,
@@ -120,7 +123,7 @@ function Reception() {
 
       alert("Invoice and sessions saved!");
 
-      // 3. Reset form
+      // 3. Reset form (Exactly as your original)
       setForm({
         date: new Date().toISOString().split("T")[0],
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -145,7 +148,7 @@ function Reception() {
         taxNumber: ""
       });
 
-      // 4. Clear the sessions queue
+      // 4. NEW: Clear the sessions queue after successful save
       setPendingSessions([]);
       
     } catch (err) {
@@ -173,20 +176,18 @@ function Reception() {
           <input type="text" value={form.time} readOnly />
         </div>
 
-        {/* PATIENT NAME COMPONENT INPUT WITH NATIVE SUGGESTIONS LIST LINKING */}
+        {/* --- 1. PATIENT NAME FIELD WITH DATALIST --- */}
         <div style={fieldStyle}>
           <label>Patient Name</label>
           <input 
             type="text" 
             value={form.patientName} 
             onChange={e => handleChange("patientName", e.target.value)} 
-            list="patient-suggestions"
-            placeholder="Type or select patient..."
+            list="suggest-name"
+            placeholder="Search/Type Name..."
           />
-          <datalist id="patient-suggestions">
-            {existingPatients.map((p, idx) => (
-              <option key={p.id || idx} value={p.patientName} />
-            ))}
+          <datalist id="suggest-name">
+            {uniqueNames.map((name, index) => <option key={index} value={name} />)}
           </datalist>
         </div>
 
@@ -195,14 +196,34 @@ function Reception() {
           <input type="number" value={form.age} onChange={e => handleChange("age", e.target.value)} />
         </div>
 
+        {/* --- 2. PATIENT ID FIELD WITH DATALIST --- */}
         <div style={fieldStyle}>
           <label>ID</label>
-          <input type="text" value={form.patientId} onChange={e => handleChange("patientId", e.target.value)} />
+          <input 
+            type="text" 
+            value={form.patientId} 
+            onChange={e => handleChange("patientId", e.target.value)} 
+            list="suggest-id"
+            placeholder="Search/Type ID..."
+          />
+          <datalist id="suggest-id">
+            {uniqueIds.map((id, index) => <option key={index} value={id} />)}
+          </datalist>
         </div>
 
+        {/* --- 3. PHONE FIELD WITH DATALIST --- */}
         <div style={fieldStyle}>
           <label>Phone</label>
-          <input type="text" value={form.phone} onChange={e => handleChange("phone", e.target.value)} />
+          <input 
+            type="text" 
+            value={form.phone} 
+            onChange={e => handleChange("phone", e.target.value)} 
+            list="suggest-phone"
+            placeholder="Search/Type Phone..."
+          />
+          <datalist id="suggest-phone">
+            {uniquePhones.map((phone, index) => <option key={index} value={phone} />)}
+          </datalist>
         </div>
 
         <div style={fieldStyle}>
@@ -219,8 +240,7 @@ function Reception() {
           <label>Service</label>
           <select value={form.service} onChange={e => handleChange("service", e.target.value)}>
             <option value="">Select Service</option>
-            {/* Filter array to accurately isolate specific unique Service data entries */}
-            {dbData.filter(d => d.serviceName).map((d, idx) => <option key={d.id || idx} value={d.serviceName}>{d.serviceName}</option>)}
+            {dbData.map(d => <option key={d.id} value={d.serviceName}>{d.serviceName}</option>)}
           </select>
         </div>
 
@@ -228,8 +248,7 @@ function Reception() {
           <label>Doctor</label>
           <select value={form.doctor} onChange={e => handleChange("doctor", e.target.value)}>
             <option value="">Select Doctor</option>
-            {/* Filter array to accurately isolate specific unique Doctor data entries */}
-            {dbData.filter(d => d.doctorName).map((d, idx) => <option key={d.id || idx} value={d.doctorName}>{d.doctorName}</option>)}
+            {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
           </select>
         </div>
 
@@ -308,7 +327,7 @@ function Reception() {
           <label>Doctor</label>
           <select value={sessionInput.doctor} onChange={e => setSessionInput({...sessionInput, doctor: e.target.value})}>
             <option value="">Select Doctor</option>
-            {dbData.filter(d => d.doctorName).map((d, idx) => <option key={d.id || idx} value={d.doctorName}>{d.doctorName}</option>)}
+            {dbData.map(d => <option key={d.id} value={d.doctorName}>{d.doctorName}</option>)}
           </select>
         </div>
         <button type="button" onClick={addSessionToQueue} style={{ height: "40px", marginBottom: "10px" }}>+ Add Session</button>
